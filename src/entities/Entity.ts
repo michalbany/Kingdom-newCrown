@@ -1,8 +1,10 @@
 import TimeManager from "../core/TimeManager";
+import { wordState } from "../core/State";
 
 export default class Entity {
   // position
-  protected id: string;
+  protected readonly id: string;
+  public name: string = "unnamed";
   protected x: number;
   protected y: number;
 
@@ -22,14 +24,14 @@ export default class Entity {
 
   // stats
   protected demage: number = 0;
-  protected baseEnergy: number = 0;
-  protected currentEnergy: number = this.baseEnergy;
-  protected baseHealth: number = 0;
-  protected currentHealth: number = this.baseHealth;
+  public baseEnergy: number = 0;
+  public currentEnergy: number = this.baseEnergy;
+  public baseHealth: number = 0;
+  public currentHealth: number = this.baseHealth;
   protected energyRegen: number = 0;
   protected healthRegen: number = 0;
   protected isEnergyRecovering: boolean = false;
-  protected energyRecoveryDelay: number = 4;
+  protected energyRecoveryDelay: number = 2;
 
   constructor(x: number, y: number) {
     this.id = Math.random().toString(36).substr(2, 9);
@@ -49,7 +51,7 @@ export default class Entity {
       `energy_recover_${this.id}`,
       this.energyRecoveryDelay,
       () => {
-          this.isEnergyRecovering = false;
+        this.isEnergyRecovering = false;
       }
     );
   }
@@ -69,7 +71,7 @@ export default class Entity {
   public sprint() {
     this.isSprinting = true;
     if (this.ableToSprint) {
-      this.currentSpeed = this.baseSpeed * 4;
+      this.currentSpeed = this.baseSpeed * 2;
     }
   }
 
@@ -85,7 +87,7 @@ export default class Entity {
 
   protected updateEnergy() {
     if (this.isSprinting && !this.infiniteSprint) {
-      this.decreaseEnergy(20);
+      this.decreaseEnergy(10);
     } else if (!this.isEnergyRecovering) {
       this.increaseEnergy(this.energyRegen);
     }
@@ -113,8 +115,16 @@ export default class Entity {
     }
   }
 
+  protected checkBoundaries() {
+    this.x = Math.max(
+        wordState.boundaries.left,
+      Math.min(this.x, wordState.boundaries.right - this.width)
+    );
+  }
+
   public update(deltaTime: number) {
     this.move(deltaTime);
+    this.checkBoundaries();
   }
 
   render(context: CanvasRenderingContext2D) {

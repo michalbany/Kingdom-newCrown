@@ -1,53 +1,83 @@
 import Player from "../entities/Player";
 import InputHandler from "./Input";
 import TimeManager from "./TimeManager";
+import Camera from "./Camera";
+import Ground from "../entities/Ground";
+import { wordState } from "./State";
+import { renderGameUI } from "../components/gameUI";
 
 class Game {
-    private canvas: HTMLCanvasElement;
-    private context: CanvasRenderingContext2D;
-    private lastRenderTime: number = 0;
-    private player: Player;
-    private input: InputHandler;
+  private canvas: HTMLCanvasElement;
+  private context: CanvasRenderingContext2D;
+  private lastRenderTime: number = 0;
+  private player: Player;
+  private camera: Camera;
+  private ground: Ground;
+  private input: InputHandler;
 
-    constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-        this.canvas = canvas;
-        this.context = context;
-        // init entities
-        this.input = new InputHandler();
-        this.player = new Player(500, 400, this.input);
-    }
+  constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+    this.canvas = canvas;
+    this.context = context;
+    this.camera = new Camera(canvas.width);
+    this.ground = new Ground(
+      wordState.boundaries.left,
+      canvas.height - 150,
+      wordState.boundaries.right,
+      150
+    );
+    // init entities
+    this.input = new InputHandler();
+    this.player = new Player(wordState.center, canvas.height - 200, this.input);
+  }
 
-    start() {
-        window.requestAnimationFrame(this.gameLoop.bind(this));
-    }
+  get groundLevel() {
+    return this.canvas.height - 150;
+  }
 
-    private gameLoop(currentTime: number) {
-        const deltaTime = (currentTime - this.lastRenderTime) / 1000;
-        this.lastRenderTime = currentTime;
+  get screenMiddle() {
+    return this.canvas.width / 2;
+  }
 
-        // Clear the canvas
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  start() {
+    window.requestAnimationFrame(this.gameLoop.bind(this));
+  }
 
-        // Update game state
-        this.update(deltaTime);
+  private gameLoop(currentTime: number) {
+    const deltaTime = (currentTime - this.lastRenderTime) / 1000;
+    this.lastRenderTime = currentTime;
 
-        // Render game objects
-        this.render();
+    // Clear the canvas
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Request the next frame
-        window.requestAnimationFrame(this.gameLoop.bind(this));
-    }
+    // Update game state
+    this.update(deltaTime);
 
-    private update(deltaTime: number) {
-        TimeManager.update(deltaTime);
-        this.player.update(deltaTime);
+    // Render game objects
+    this.render();
+    renderGameUI(this.context, this.player);
 
-    }
+    // Request the next frame
+    window.requestAnimationFrame(this.gameLoop.bind(this));
+  }
 
-    private render() {
-        // Render game objects
-        this.player.render(this.context);
-    }
+  private update(deltaTime: number) {
+    this.camera.centerOn(this.player);
+    TimeManager.update(deltaTime);
+    this.player.update(deltaTime);
+  }
+
+  private render() {
+    this.context.save();
+    this.context.translate(-this.camera.x, 0);
+
+    // render ground
+    this.ground.render(this.context);
+
+    // Render game objects
+    this.player.render(this.context);
+
+    this.context.restore();
+  }
 }
 
 export default Game;
