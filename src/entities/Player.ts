@@ -10,9 +10,10 @@ export default class Player extends Entity {
     this.baseSpeed = 100;
     this.color = "red";
     this.height = 50;
-    this.energyRegen = 50;
-    this.energy = 100;
-    this.health = 100;
+    this.energyRegen = 10;
+    this.baseEnergy = 100;
+    this.baseHealth = 100;
+    this.init();
   }
 
   update(deltaTime: number) {
@@ -45,8 +46,8 @@ export default class Player extends Entity {
 
     context.fillStyle = "white";
     context.font = "15px Arial";
-    context.fillText(`Energy: ${this.energy}`, 10, 20);
-    context.fillText(`Health: ${this.health}`, 10, 40);
+    context.fillText(`Energy: ${this.currentEnergy}`, 10, 20);
+    context.fillText(`Health: ${this.currentHealth}`, 10, 40);
     context.fillText(`Speed: ${this.currentSpeed}`, 10, 60);
     context.fillText(`Sprinting: ${this.isSprinting}`, 10, 80);
     context.fillText(`Moving: ${this.isMoving}`, 10, 100);

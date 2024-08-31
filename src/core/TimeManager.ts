@@ -27,6 +27,13 @@ class TimeManager {
     this.timers.set(id, { interval, lastUpdate: this.elapsedTime, callback });
   }
 
+  public resetTimer(id: string): void {
+    const timer = this.timers.get(id);
+    if (timer) {
+      timer.lastUpdate = this.elapsedTime;
+    }
+  }
+
   public removeTimer(id: string): void {
     this.timers.delete(id);
   }

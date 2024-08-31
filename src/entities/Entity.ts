@@ -2,55 +2,56 @@ import TimeManager from "../core/TimeManager";
 
 export default class Entity {
   // position
+  protected id: string;
   protected x: number;
   protected y: number;
-  protected id: string;
 
   // movement
-  protected baseSpeed: number;
-  protected currentSpeed: number;
-  protected direction: number;
-  protected canSprint: boolean;
-  protected infiniteSprint: boolean;
-  protected isMoving: boolean;
-  protected isSprinting: boolean;
+  protected baseSpeed: number = 0;
+  protected currentSpeed: number = this.baseSpeed;
+  protected direction: number = 0;
+  protected canSprint: boolean = true;
+  protected infiniteSprint: boolean = false;
+  protected isMoving: boolean = false;
+  protected isSprinting: boolean = false;
 
   // appearance
-  protected color: string;
-  protected height: number;
-  protected width: number;
+  protected color: string = "black";
+  protected height: number = 30;
+  protected width: number = 30;
 
   // stats
-  protected demage: number;
-  protected health: number;
-  protected energy: number;
-  protected energyRegen: number;
-  protected healthRegen: number;
+  protected demage: number = 0;
+  protected baseEnergy: number = 0;
+  protected currentEnergy: number = this.baseEnergy;
+  protected baseHealth: number = 0;
+  protected currentHealth: number = this.baseHealth;
+  protected energyRegen: number = 0;
+  protected healthRegen: number = 0;
+  protected isEnergyRecovering: boolean = false;
+  protected energyRecoveryDelay: number = 4;
 
   constructor(x: number, y: number) {
+    this.id = Math.random().toString(36).substr(2, 9);
     this.x = x;
     this.y = y;
-    this.id = Math.random().toString(36).substr(2, 9);
-    this.color = "black";
-    this.height = 30;
-    this.width = 30;
+    this.init();
+  }
 
-    this.baseSpeed = 0;
+  protected init() {
+    this.currentEnergy = this.baseEnergy;
+    this.currentHealth = this.baseHealth;
     this.currentSpeed = this.baseSpeed;
-    this.direction = 0;
-    this.canSprint = true;
-    this.isMoving = false;
-    this.isSprinting = false;
-    this.infiniteSprint = false;
-
-    this.demage = 0;
-    this.health = 0;
-    this.energy = 0;
-    this.energyRegen = 0;
-    this.healthRegen = 0;
 
     // timers
     TimeManager.setTimer(`energy_${this.id}`, 1, this.updateEnergy.bind(this));
+    TimeManager.setTimer(
+      `energy_recover_${this.id}`,
+      this.energyRecoveryDelay,
+      () => {
+          this.isEnergyRecovering = false;
+      }
+    );
   }
 
   public walk(direction: number) {
@@ -66,16 +67,14 @@ export default class Entity {
   }
 
   public sprint() {
+    this.isSprinting = true;
     if (this.ableToSprint) {
-      this.isSprinting = true;
       this.currentSpeed = this.baseSpeed * 4;
-    } else {
-      this.isSprinting = false;
     }
   }
 
   get ableToSprint(): boolean {
-    return this.canSprint && this.energy > 0;
+    return this.canSprint && this.currentEnergy > 0;
   }
 
   protected move(deltaTime: number) {
@@ -87,12 +86,30 @@ export default class Entity {
   protected updateEnergy() {
     if (this.isSprinting && !this.infiniteSprint) {
       this.decreaseEnergy(20);
+    } else if (!this.isEnergyRecovering) {
+      this.increaseEnergy(this.energyRegen);
+    }
+  }
+
+  protected increaseEnergy(amount: number) {
+    if (this.currentEnergy < this.baseEnergy) {
+      this.currentEnergy += amount;
+    }
+
+    if (this.currentEnergy > this.baseEnergy) {
+      this.currentEnergy = this.baseEnergy;
     }
   }
 
   protected decreaseEnergy(amount: number) {
-    if (this.energy >= 0) {
-      this.energy -= amount;
+    if (this.currentEnergy >= 0) {
+      this.currentEnergy -= amount;
+    }
+
+    if (this.currentEnergy <= 0) {
+      this.currentEnergy = 0;
+      this.isEnergyRecovering = true;
+      TimeManager.resetTimer(`energy_recover_${this.id}`);
     }
   }
 
