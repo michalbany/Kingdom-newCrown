@@ -1,5 +1,6 @@
 import Player from "../entities/Player";
 import InputHandler from "./Input";
+import TimeManager from "./TimeManager";
 
 class Game {
     private canvas: HTMLCanvasElement;
@@ -11,10 +12,9 @@ class Game {
     constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
         this.canvas = canvas;
         this.context = context;
-
         // init entities
         this.input = new InputHandler();
-        this.player = new Player(50, 50, this.input);
+        this.player = new Player(500, 400, this.input);
     }
 
     start() {
@@ -39,7 +39,9 @@ class Game {
     }
 
     private update(deltaTime: number) {
+        TimeManager.update(deltaTime);
         this.player.update(deltaTime);
+
     }
 
     private render() {

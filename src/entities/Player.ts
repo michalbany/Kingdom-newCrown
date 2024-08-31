@@ -42,6 +42,15 @@ export default class Player extends Entity {
 
   render(context: CanvasRenderingContext2D) {
     super.render(context);
-    // console.log(this.energy, this.ableToSprint);
+
+    context.fillStyle = "white";
+    context.font = "15px Arial";
+    context.fillText(`Energy: ${this.energy}`, 10, 20);
+    context.fillText(`Health: ${this.health}`, 10, 40);
+    context.fillText(`Speed: ${this.currentSpeed}`, 10, 60);
+    context.fillText(`Sprinting: ${this.isSprinting}`, 10, 80);
+    context.fillText(`Moving: ${this.isMoving}`, 10, 100);
+    context.fillText(`Can Sprint: ${this.ableToSprint}`, 10, 120);
+    context.fillText(`ID: ${this.id}`, 10, 140);
   }
 }
