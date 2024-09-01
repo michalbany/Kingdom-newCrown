@@ -3,7 +3,7 @@ type TimerCallback = () => void;
 class TimeManager {
   private static instance: TimeManager;
   private elapsedTime: number = 0;
-  private timers: Map<string, { interval: number, lastUpdate: number, callback: TimerCallback }> = new Map();
+  private timers: Map<string, { interval: number, lastUpdate: number, callback: TimerCallback, oneTime: boolean }> = new Map();
 
   private constructor() {}
 
@@ -23,8 +23,12 @@ class TimeManager {
     return this.elapsedTime;
   }
 
-  public setTimer(id: string, interval: number, callback: TimerCallback): void {
-    this.timers.set(id, { interval, lastUpdate: this.elapsedTime, callback });
+  public isTimerRunning(id: string): boolean {
+    return this.timers.has(id);
+  }
+
+  public setTimer(id: string, interval: number, callback: TimerCallback, oneTime: boolean = false): void {
+    this.timers.set(id, { interval, lastUpdate: this.elapsedTime, callback, oneTime });
   }
 
   public resetTimer(id: string): void {
@@ -39,10 +43,14 @@ class TimeManager {
   }
 
   private updateTimers(): void {
-    this.timers.forEach((timer) => {
+    this.timers.forEach((timer, id) => {
       if (this.elapsedTime - timer.lastUpdate >= timer.interval) {
         timer.callback();
-        timer.lastUpdate = this.elapsedTime;
+        if (timer.oneTime) {
+          this.timers.delete(id);
+        } else {
+          timer.lastUpdate = this.elapsedTime;
+        }
       }
     });
   }

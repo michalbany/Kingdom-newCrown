@@ -54,7 +54,7 @@ class Game {
 
     // Render game objects
     this.render();
-    renderGameUI(this.context, this.player);
+    renderGameUI(this.context, this.player, deltaTime);
 
     // Request the next frame
     window.requestAnimationFrame(this.gameLoop.bind(this));

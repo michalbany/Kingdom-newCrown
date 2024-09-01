@@ -1,7 +1,34 @@
 import TimeManager from "../core/TimeManager";
 import { wordState } from "../core/State";
+import SpriteSheet from "../utils/SpriteSheet";
+import { Animate } from "../utils/AnimationManager";
 
-export default class Entity {
+type EntitySheet = {
+  default: SpriteSheet;
+  idle?: SpriteSheet;
+  run?: SpriteSheet;
+  walk?: SpriteSheet;
+  attack?: SpriteSheet;
+  jump?: SpriteSheet;
+  fall?: SpriteSheet;
+  die?: SpriteSheet;
+  hit?: SpriteSheet;
+  block?: SpriteSheet;
+  dance?: SpriteSheet;
+  sleep?: SpriteSheet;
+  sit?: SpriteSheet;
+  fly?: SpriteSheet;
+  ride?: SpriteSheet;
+  talk?: SpriteSheet;
+  read?: SpriteSheet;
+  eat?: SpriteSheet;
+  drink?: SpriteSheet;
+  heal?: SpriteSheet;
+  craft?: SpriteSheet;
+  [key: string]: SpriteSheet | undefined;
+};
+
+export default abstract class Entity {
   // position
   protected readonly id: string;
   public name: string = "unnamed";
@@ -33,6 +60,12 @@ export default class Entity {
   protected isEnergyRecovering: boolean = false;
   protected energyRecoveryDelay: number = 2;
 
+  // sheets
+  protected sheets: EntitySheet = {} as EntitySheet;
+  protected currentSpriteSheet!: SpriteSheet;
+
+  protected animate!: Animate;
+
   constructor(x: number, y: number) {
     this.id = Math.random().toString(36).substr(2, 9);
     this.x = x;
@@ -45,15 +78,10 @@ export default class Entity {
     this.currentHealth = this.baseHealth;
     this.currentSpeed = this.baseSpeed;
 
+    this.currentSpriteSheet = this.sheets.default;
+    this.animate = new Animate(this.currentSpriteSheet);
     // timers
     TimeManager.setTimer(`energy_${this.id}`, 1, this.updateEnergy.bind(this));
-    TimeManager.setTimer(
-      `energy_recover_${this.id}`,
-      this.energyRecoveryDelay,
-      () => {
-        this.isEnergyRecovering = false;
-      }
-    );
   }
 
   public walk(direction: number) {
@@ -87,7 +115,7 @@ export default class Entity {
 
   protected updateEnergy() {
     if (this.isSprinting && !this.infiniteSprint) {
-      this.decreaseEnergy(10);
+      this.decreaseEnergy(20);
     } else if (!this.isEnergyRecovering) {
       this.increaseEnergy(this.energyRegen);
     }
@@ -109,6 +137,14 @@ export default class Entity {
     }
 
     if (this.currentEnergy <= 0) {
+      // set oneTime timer to delay energy recovery
+      TimeManager.setTimer(
+        `energy_recover_${this.id}`,
+        this.energyRecoveryDelay,
+        () => (this.isEnergyRecovering = false),
+        true
+      );
+      
       this.currentEnergy = 0;
       this.isEnergyRecovering = true;
       TimeManager.resetTimer(`energy_recover_${this.id}`);
@@ -117,7 +153,7 @@ export default class Entity {
 
   protected checkBoundaries() {
     this.x = Math.max(
-        wordState.boundaries.left,
+      wordState.boundaries.left,
       Math.min(this.x, wordState.boundaries.right - this.width)
     );
   }
@@ -125,15 +161,40 @@ export default class Entity {
   public update(deltaTime: number) {
     this.move(deltaTime);
     this.checkBoundaries();
+
+    // animate sprite
+    this.animate.update(deltaTime);
   }
 
   render(context: CanvasRenderingContext2D) {
     context.strokeStyle = this.color;
     context.strokeRect(this.x, this.y, this.width, this.height);
+    context.fillText(this.name, this.x - this.width / 2, this.y - 10);
+
+    // render sprite
+    this.currentSpriteSheet?.drawFrame(
+      context,
+      this.animate.currentFrameName,
+      this.x - this.width / 2,
+      this.y,
+      1,
+      this.direction
+    );
   }
 
   public destroy(): void {
     TimeManager.removeTimer(`energy_${this.id}`);
     //
+  }
+
+  protected changeSheet(sheet: keyof EntitySheet) {
+    if (this.currentSpriteSheet !== this.sheets[sheet]) {
+      this.currentSpriteSheet = this.sheets[sheet] ?? this.defaultSheet;
+      this.animate.updateSpriteSheet(this.currentSpriteSheet);
+    }
+  }
+
+  public get defaultSheet(): SpriteSheet {
+    return this.sheets.default;
   }
 }

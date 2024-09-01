@@ -2,11 +2,19 @@ import Player from "../entities/Player";
 
 export function renderGameUI(
   context: CanvasRenderingContext2D,
-  player: Player
+  player: Player,
+  deltaTime: number
 ) {
   const padding = 10;
   const barWidth = 200;
   const barHeight = 20;
+
+  // Render FPS
+  context.fillStyle = "white";
+  context.font = "15px Arial";
+  context.fillText(`FPS: ${Math.round(1 / deltaTime)}`, 10, 120);
+
+  
 
   // Render entity name
   context.fillStyle = "white";
@@ -40,33 +48,32 @@ export function renderGameUI(
   );
 }
 
-
 function renderBar(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    current: number,
-    max: number,
-    label: string,
-    color: string,
-    context: CanvasRenderingContext2D
-  ) {
-    // Draw background
-    context.fillStyle = "rgba(0,0,0,0.5)";
-    context.fillRect(x, y, width, height);
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  current: number,
+  max: number,
+  label: string,
+  color: string,
+  context: CanvasRenderingContext2D
+) {
+  // Draw background
+  context.fillStyle = "rgba(0,0,0,0.5)";
+  context.fillRect(x, y, width, height);
 
-    // Draw fill
-    const fillWidth = (current / max) * width;
-    context.fillStyle = color;
-    context.fillRect(x, y, fillWidth, height);
+  // Draw fill
+  const fillWidth = (current / max) * width;
+  context.fillStyle = color;
+  context.fillRect(x, y, fillWidth, height);
 
-    // Draw border
-    context.strokeStyle = "white";
-    context.strokeRect(x, y, width, height);
+  // Draw border
+  context.strokeStyle = "white";
+  context.strokeRect(x, y, width, height);
 
-    // Draw text
-    context.fillStyle = "white";
-    context.font = "12px Arial";
-    context.fillText(`${label}: ${current}/${max}`, x + 5, y + height - 5);
-  }
+  // Draw text
+  context.fillStyle = "white";
+  context.font = "12px Arial";
+  context.fillText(`${label}: ${current}/${max}`, x + 5, y + height - 5);
+}
