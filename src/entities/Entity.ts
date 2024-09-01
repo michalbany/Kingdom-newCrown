@@ -144,7 +144,7 @@ export default abstract class Entity {
         () => (this.isEnergyRecovering = false),
         true
       );
-      
+
       this.currentEnergy = 0;
       this.isEnergyRecovering = true;
       TimeManager.resetTimer(`energy_recover_${this.id}`);
@@ -172,14 +172,9 @@ export default abstract class Entity {
     context.fillText(this.name, this.x - this.width / 2, this.y - 10);
 
     // render sprite
-    this.currentSpriteSheet?.drawFrame(
-      context,
-      this.animate.currentFrameName,
-      this.x - this.width / 2,
-      this.y,
-      1,
-      this.direction
-    );
+    this.currentSpriteSheet.drawFrame(context, this.animate.currentFrameName, this.x, this.y, this.width, this.height, this.direction);
+
+    context.strokeRect(this.x + 30, (this.height + this.y) - (this.height - 20), this.width, this.height - 20);
   }
 
   public destroy(): void {
