@@ -128,8 +128,8 @@ export default class Entity {
   }
 
   render(context: CanvasRenderingContext2D) {
-    context.fillStyle = this.color;
-    context.fillRect(this.x, this.y, this.width, this.height);
+    context.strokeStyle = this.color;
+    context.strokeRect(this.x, this.y, this.width, this.height);
   }
 
   public destroy(): void {

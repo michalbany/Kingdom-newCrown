@@ -67,6 +67,7 @@ class Game {
   }
 
   private render() {
+    this.context.imageSmoothingEnabled = false;
     this.context.save();
     this.context.translate(-this.camera.x, 0);
 
