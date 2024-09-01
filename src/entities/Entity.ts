@@ -173,8 +173,6 @@ export default abstract class Entity {
 
     // render sprite
     this.currentSpriteSheet.drawFrame(context, this.animate.currentFrameName, this.x, this.y, this.width, this.height, this.direction);
-
-    context.strokeRect(this.x + 30, (this.height + this.y) - (this.height - 20), this.width, this.height - 20);
   }
 
   public destroy(): void {
